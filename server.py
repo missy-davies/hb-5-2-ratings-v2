@@ -46,6 +46,42 @@ def show_users():
     return render_template('all_users.html', users=users)
 
 
+@app.route('/user-login', methods=['POST'])
+def log_user_in():
+    """Logs user into their account."""
+
+    user = crud.get_user_by_email(request.form['email'])
+
+    password = request.form['password']
+
+    if user == None:
+        flash('''An account for this email doesn't exist yet. 
+                Please create a new account''')
+    elif password != user.password:
+        flash('Wrong password. Please try again.')
+    else:
+        flash('Logged in!')
+        session['user-id'] = user.user_id
+
+    return redirect('/')
+
+@app.route('/users', methods=['POST'])
+def register_new_user():
+    """Registers a new user"""
+
+    existing_user = crud.get_user_by_email(request.form['email'])
+
+    if existing_user == None:
+
+        crud.create_user(request.form['email'], request.form['password'])
+        flash('You have successfully created an account. You can log in.')
+
+    else:
+        flash('An account already exists with this email. Please try again.')
+
+    return redirect('/')
+
+
 @app.route('/users/<user_id>')
 def show_user_details(user_id):
     """Show more detailed information on a particular user."""
